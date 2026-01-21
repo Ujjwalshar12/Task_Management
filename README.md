@@ -106,3 +106,6 @@ Automatically marks tasks as completed
 Skips tasks already completed or deleted
 
 Runs concurrently using goroutines & channels
+
+
+## Logger also added to checking the status on prometheus/Argo CI/CD
