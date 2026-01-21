@@ -17,6 +17,7 @@ type Config struct {
 
 	JWTSecret   string
 	AutoMinutes string
+	Port        string
 }
 
 func Load() *Config {
@@ -37,6 +38,7 @@ func Load() *Config {
 
 		JWTSecret:   os.Getenv("JWT_SECRET"),
 		AutoMinutes: os.Getenv("AUTO_COMPLETE_MINUTES"),
+		Port:        os.Getenv("PORT"),
 	}
 
 	log.Println("Config loaded successfully")

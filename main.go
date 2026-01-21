@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	_ "github.com/lib/pq"
 
@@ -18,12 +17,16 @@ import (
 var cfg *config.Config
 
 func main() {
-	//load env variable
-	cfg = config.Load()
-	logger.Info("Configuration initialized in init()")
-	// Connect DB
+
+	// Load configuration
+	cfg := config.Load()
+	logger.Info("Configuration Loaded")
+
+	// Connect to database
 	dbConn := db.Connect(cfg)
 	defer dbConn.Close()
+
+	logger.Info("Database connected")
 
 	// Initialize repositories
 	taskRepo := &repository.TaskRepository{DB: dbConn}
@@ -34,7 +37,10 @@ func main() {
 	// Initialize queue & background worker
 	queue := make(chan string, 100)
 
-	w := worker.New(taskRepo, queue, cfg.AutoMinutes)
+	w, err := worker.New(taskRepo, queue, cfg.AutoMinutes)
+	if err != nil {
+		logger.Fatal("Worker initialization failed: %v", err)
+	}
 	w.Start()
 
 	logger.Info("Background worker started with auto-complete=%d minutes", cfg.AutoMinutes)
@@ -47,11 +53,11 @@ func main() {
 
 	logger.Info("Task service initialized")
 
-	// Setup router (delegated to routers package )
+	// Setup router
 	r := routers.SetupRouter(cfg, taskService, taskRepo, userRepo)
 
 	// Start HTTP server
-	port := os.Getenv("PORT")
+	port := cfg.Port
 	if port == "" {
 		port = "8080"
 	}
